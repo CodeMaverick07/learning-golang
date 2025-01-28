@@ -2,7 +2,7 @@ POST http://localhost:8080/events
 content-type: application/json
 
 {
-    "name": "Meeting",
+    "name": "sleeping",
     "description": "Team meeting at office",
     "location": "Room 101",
     "date_time": "2025-01-27T15:04:05Z"
