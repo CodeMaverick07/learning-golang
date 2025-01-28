@@ -79,3 +79,27 @@ func updateEvent(contex *gin.Context) {
 	}
 }
 
+func deleteEvent(contex *gin.Context) {
+	eventId,err:= strconv.ParseInt(contex.Param("id"),10,64)
+	if err != nil {
+		 contex.JSON(http.StatusBadRequest,gin.H{"message":"wrong eventId in params"})
+		 return
+	}
+	event,err:= models.GetEventById(eventId)
+	if err != nil {
+		contex.JSON(http.StatusBadRequest,gin.H{"message":"something went wrong in delete event"})
+		return 
+	}
+	
+    err = contex.ShouldBind(&event)
+	if err != nil {
+		contex.JSON(http.StatusBadRequest,gin.H{"message":"error in binding json in delete event"})
+		return 
+	}
+	err = event.Delete()
+	if err != nil {
+		contex.JSON(http.StatusBadRequest,gin.H{"message":"failed to delete event"})
+	}
+	
+	contex.JSON(http.StatusOK,gin.H{"message":"event deleted successfully"})
+}
