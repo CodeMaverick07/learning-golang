@@ -12,7 +12,7 @@ type Event struct {
     Description string   
     Location    string 
     DateTime    time.Time
-    UserID      string
+    UserID      int64
 } 
 func (e *Event) Save() error {
     query := `INSERT INTO EVENTS(name, description, location, dateTime, userId)
@@ -77,22 +77,22 @@ return &event,nil
 
 func (e Event) Update() error {
     query := `UPDATE events 
-        SET name = ?, description = ?, location = ?, dateTime = ?, userId = ?
+        SET name = ?, description = ?, location = ?, dateTime = ?
         WHERE id = ?`
     
-    fmt.Printf("Updating event with ID: %d\n", e.ID)  // Debug log
-    fmt.Printf("Values: %+v\n", e)  // Debug log
+    fmt.Printf("Updating event with ID: %d\n", e.ID) 
+    fmt.Printf("Values: %+v\n", e) 
     
     stmt, err := db.DB.Prepare(query)
     if err != nil {
-        fmt.Printf("Prepare error: %v\n", err)  // Debug log
+        fmt.Printf("Prepare error: %v\n", err) 
         return err
     }
     defer stmt.Close()
     
-    result, err := stmt.Exec(e.Name, e.Description, e.Location, e.DateTime, e.UserID, e.ID)
+    result, err := stmt.Exec(e.Name, e.Description, e.Location, e.DateTime, e.ID)
     if err != nil {
-        fmt.Printf("Exec error: %v\n", err)  // Debug log
+        fmt.Printf("Exec error: %v\n", err)
         return err
     }
     
@@ -122,4 +122,33 @@ if err != nil {
     return err 
 }
 return nil 
+}
+
+func (e Event) Register(userId int64) error {
+    query := `INSERT INTO registrations(event_id, user_id) VALUES (?, ?)`
+    stmt, err := db.DB.Prepare(query)
+    if err != nil { 
+    }
+    defer stmt.Close()
+    
+    _, err = stmt.Exec(e.ID, userId)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+func (e Event) Unregister(userId int64) error {
+    query := `DELETE FROM registrations WHERE event_id = ? AND user_id = ?`
+    stmt, err := db.DB.Prepare(query)
+    if err != nil {
+        return err
+    }
+    defer stmt.Close()
+    
+    _, err = stmt.Exec(e.ID, userId)
+    if err != nil {
+        return err
+    }
+    return nil
 }

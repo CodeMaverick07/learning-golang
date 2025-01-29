@@ -19,19 +19,20 @@ func getAllEvents(contex *gin.Context){
 	contex.JSON(http.StatusOK,events)
 }
 
-func createEvents (contex *gin.Context){
+func createEvents(contex *gin.Context){	
 	var event models.Event
-	err:=contex.ShouldBindJSON(&event)
+	err :=contex.ShouldBindJSON(&event)
 	if err != nil {
 		contex.JSON(http.StatusBadRequest,gin.H{"message":"could not the requried fields"})
 		return
 	}
-	event.UserID = "1"
+	event.UserID = contex.GetInt64("userId") 
 	err = event.Save()
 	if err != nil {
 		contex.JSON(http.StatusBadRequest,gin.H{"message":"not able to save data"})
 		return 
 	}
+
 	contex.JSON(http.StatusCreated,gin.H{"message":"message created","event":event})
  }
 
@@ -51,13 +52,18 @@ func getEventsById(contex *gin.Context){
 }
 
 func updateEvent(contex *gin.Context) {
+	userId := contex.GetInt64("userId")
 	eventId,err:= strconv.ParseInt(contex.Param("id"),10,64)
 	if err != nil {
 		 contex.JSON(http.StatusBadRequest,gin.H{"message":"wrong eventId in params"})
 		 return
 	}
 
-	_,err= models.GetEventById(eventId)
+	event ,err:= models.GetEventById(eventId)
+	if event.UserID != userId {
+		contex.JSON(http.StatusBadRequest,gin.H{"message":"you are not authorized to update this event"})
+		return
+	}
 	
 	if err != nil {
 		contex.JSON(http.StatusBadRequest,gin.H{"message":"something went wrong in udate event"})
@@ -80,12 +86,17 @@ func updateEvent(contex *gin.Context) {
 }
 
 func deleteEvent(contex *gin.Context) {
+	userId := contex.GetInt64("userId")
 	eventId,err:= strconv.ParseInt(contex.Param("id"),10,64)
 	if err != nil {
 		 contex.JSON(http.StatusBadRequest,gin.H{"message":"wrong eventId in params"})
 		 return
 	}
 	event,err:= models.GetEventById(eventId)
+	if event.UserID != userId {
+		contex.JSON(http.StatusBadRequest,gin.H{"message":"you are not authorized to delete this event"})
+		return 
+	}
 	if err != nil {
 		contex.JSON(http.StatusBadRequest,gin.H{"message":"something went wrong in delete event"})
 		return 

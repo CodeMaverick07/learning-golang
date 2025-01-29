@@ -15,7 +15,7 @@ type User struct {
 	Password string
 }
 
-func (u User) Save() error {
+func (u *User) Save() error {
 query := `INSERT INTO users(email, password) VALUES (?, ?)`
 stmt,err := db.DB.Prepare(query)
 if err != nil {
@@ -42,7 +42,7 @@ u.ID = id
 return err
 }
 
-func (u User) Authenticate() error {
+func (u * User) Authenticate() error {
 	query := `SELECT id, password FROM users WHERE email = ?`
 	
 	row := db.DB.QueryRow(query ,u.Email) 
